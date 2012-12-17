@@ -63,6 +63,9 @@ class ThankfulPeoplePlugin extends Gdn_Plugin {
 		$ObjectID = GetValue(1, $Sender->RequestArgs);
 		$Field = $ThanksLogModel->GetPrimaryKeyField($Type);
 		$UserID = $ThanksLogModel->GetObjectInserUserID($Type, $ObjectID);
+		//Check Transient key to prevent CSRF
+		$TransKey=GetValue(4, $Sender->RequestArgs);
+		if ($TransKey!=urlencode(Gdn::Session()->TransientKey()).($Target ? '&Target='.urlencode($Target) : ''))throw new Exception('Invalid TransKey!');
 		if ($UserID == False) throw new Exception('Object has no owner.');
 		if ($UserID == $Session->UserID) throw new Exception('You cannot thank yourself.');
 		if (!self::IsThankable($Type)) throw new Exception("Not thankable ($Type).");
@@ -155,7 +158,9 @@ class ThankfulPeoplePlugin extends Gdn_Plugin {
 		if ($AllowThank) {
 			static $LocalizedThankButtonText;
 			if ($LocalizedThankButtonText === Null) $LocalizedThankButtonText = T('ThankCommentOption', T('Thanks'));
-			$ThankUrl = 'plugin/thankfor/'.strtolower($Type).'/'.$ObjectID.'?Target='.$Sender->SelfUrl;
+			//$ThankUrl = 'plugin/thankfor/'.strtolower($Type).'/'.$ObjectID.'?Target='.$Sender->SelfUrl;
+			//Append the Transientkey at the end of the url to prevent CSRF
+			$ThankUrl = 'plugin/thankfor/'.strtolower($Type).'/'.$ObjectID.'?Target='.$Sender->SelfUrl.'/'.urlencode(Gdn::Session()->TransientKey()).($Target ? '&Target='.urlencode($Target) : '').'?';
 			$Option = '<span class="Thank">'.Anchor($LocalizedThankButtonText, $ThankUrl).'</span>';
 			$Sender->Options .= $Option;
 		} elseif ($AllowTakeBack) {
