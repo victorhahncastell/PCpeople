@@ -4,6 +4,9 @@ Remake of classic Vanilla One extension.
 Instead of having people post appreciation and thankyou notes they can simply click the thanks link 
 and have their username appear under that post (MySchizoBuddy).
 
+DISCLAIMER
+==========
+I'm not responsible for any damage resulting from the use of this plugin.
 CONFIGURATION
 =============
 $Configuration['Plugins']['ThankfulPeople']['Only'] = array('discussion', 'comment');
