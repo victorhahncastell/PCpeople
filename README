@@ -1,20 +1,19 @@
 DESCRIPTION
 ===========
-Remake of classic Vanilla One extension. 
-Instead of having people post appreciation and thankyou notes they can simply click the thanks link 
-and have their username appear under that post (MySchizoBuddy).
+Allows users to tag postings as "politically incorrect", asking the author to mind their wording. Sounds crazy? Hell yeah! But it works just like the well-known "Thanks" buttons, except conveying a slightly different message. In fact, this plugin is based on the "Thankful people" plugin by Jerl Linandri. It shares a version number with the Thankful People release it is based on.
+Remake of classic Vanilla One extension.
 
 DISCLAIMER
 ==========
 I'm not responsible for any damage resulting from the use of this plugin.
 CONFIGURATION
 =============
-$Configuration['Plugins']['ThankfulPeople']['Only'] = array('discussion', 'comment');
-	Allow thank only this type of objects.
+$Configuration['Plugins']['PCpeople']['Only'] = array('discussion', 'comment');
+	Allow whining only this type of objects.
 	
-$Configuration['Plugins']['ThankfulPeople']['Disabled'] = array('comment');
-	Allow disable thank only this type of objects.
-	$Configuration['Plugins']['ThankfulPeople']['Only'] has priority.
+$Configuration['Plugins']['PCpeople']['Disabled'] = array('comment');
+	Allow disable whining only this type of objects.
+	$Configuration['Plugins']['PCpeople']['Only'] has priority.
 
-$Configuration['Plugins']['ThankfulPeople']['AllowTakeBack'] = False;
-	Allow take back thank.
+$Configuration['Plugins']['PCpeople']['AllowTakeBack'] = False;
+	Allow take back whining.

@@ -11,7 +11,7 @@
 
 ?>
 
-<ul class="DataList SearchResults ThankObjects">
+<ul class="DataList SearchResults PCObjects">
 <?php foreach($this->ThankObjects as $Object) {
 	$ThankCollection = GetValue($Object->ObjectID, GetValue($Object->Type, $this->ThankData));
 	$ExcerptText = SliceString(Gdn_Format::Text($Object->ExcerptText), 200);
@@ -21,7 +21,7 @@
 <li class="Item">
 	<div class="ItemContent">
 		<div class="Excerpt"><?php echo $ExcerptText;?></div>
-	<?php echo ThankfulPeoplePlugin::ThankedByBox($ThankCollection); ?>
+	<?php echo PCpeoplePlugin::ThankedByBox($ThankCollection); ?>
 	</div>
 </li>
 	

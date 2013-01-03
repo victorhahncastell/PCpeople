@@ -6,12 +6,12 @@ $SQL = Gdn::SQL();
 $MaxUserID = $SQL->Select('UserID', 'max', 'MaxUserID')->From('User')->Get()->FirstRow()->MaxUserID;
 
 if ($Argument == 'structure') {
-	$ThankfulPeoplePlugin = new ThankfulPeoplePlugin();
+	$ThankfulPeoplePlugin = new PCpeoplePlugin();
 	$Drop = Console::Argument('drop') !== False;
 	$ThankfulPeoplePlugin->Structure($Drop);
 }
 elseif ($Argument == 'calc') {
-	ThanksLogModel::RecalculateUserReceivedThankCount();
+	PClogModel::RecalculateUserReceivedThankCount();
 	//ThanksLogModel::RecalculateCommentThankCount();
 	//ThanksLogModel::RecalculateDiscussionThankCount();
 } elseif ($Argument == 'garbage') {
@@ -38,8 +38,8 @@ elseif ($Argument == 'calc') {
 				$Fields['DiscussionID'] = $Comment->DiscussionID;
 			}
 			
-			$SQL->Insert('ThanksLog', $Fields);
-			Console::Message('Garbaged thank comment: %s', GetValue('CommentID', $Fields));
+			$SQL->Insert('PClog', $Fields);
+			Console::Message('Garbaged PC comment: %s', GetValue('CommentID', $Fields));
 		}
 	}
 }

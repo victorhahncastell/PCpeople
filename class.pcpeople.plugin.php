@@ -1,12 +1,12 @@
 <?php if (!defined('APPLICATION')) exit();
 
-$PluginInfo['ThankfulPeople'] = array(
-	'Name' => 'Thankful People',
-	'Description' => 'Remake of classic Vanilla One extension. Instead of having people post appreciation and thankyou notes they can simply click the thanks link and have their username appear under that post (MySchizoBuddy).',
+$PluginInfo['PCpeople'] = array(
+	'Name' => 'PCpeople',
+	'Description' => 'Allows users to tag postings as "politically incorrect", asking the author to mind their wording. Sounds crazy? Hell yeah! But it works just like the well-known "Thanks" buttons, except conveying a slightly different message. In fact, this plugin is based on the "Thankful people" plugin by Jerl Linandri. It shares a version number with the Thankful People release it is based on.',
 	'Version' => '2.14.2.0.18',
-	'Date' => 'Summer 2011',
-	'Author' => 'Jerl Liandri',
-	'AuthorUrl' => 'http://www.liandri-mining-corporation.com',
+	'Date' => '20120103',
+	'Author' => 'Victor Hahn',
+	'AuthorUrl' => 'http://www.victor-hahn.de',
 	'RequiredApplications' => array('Vanilla' => '>=2.0.18'),
 	'RequiredTheme' => False, 
 	'RequiredPlugins' => False,
@@ -16,7 +16,7 @@ $PluginInfo['ThankfulPeople'] = array(
 // TODO: PERMISSION THANK FOR CATEGORY
 // TODO: AttachMessageThankCount
 
-class ThankfulPeoplePlugin extends Gdn_Plugin {
+class PCpeoplePlugin extends Gdn_Plugin {
 	
 	protected $ThankForComment = array(); // UserIDs array
 	protected $CommentGroup = array();
@@ -33,14 +33,14 @@ class ThankfulPeoplePlugin extends Gdn_Plugin {
 	
 	protected function AttachMessageThankCount($Sender) {
 		$ThankCount = mt_rand(1, 33);
-		echo '<div class="ThankCount">'.Plural($Posts, 'Thanks: %s', 'Thanks: %s')), number_format($ThankCount, 0)).'</div>';
+		echo '<div class="WordingCriticizedBy">'.Plural($Posts, 'Wording criticized by: %s', 'Wording criticized by: %s')), number_format($ThankCount, 0)).'</div>';
 	}
 	*/
 	
-	public function PluginController_UnThankFor_Create($Sender) {
+	public function PluginController_UnPCtag_Create($Sender) {
 		$SessionUserID = GetValue('UserID', Gdn::Session());
-		if ($SessionUserID > 0 && C('Plugins.ThankfulPeople.AllowTakeBack', False)) {
-			$ThanksLogModel = new ThanksLogModel();
+		if ($SessionUserID > 0 && C('Plugins.PCpeople.AllowTakeBack', False)) {
+			$ThanksLogModel = new PClogModel();
 			$Type = GetValue(0, $Sender->RequestArgs);
 			$ObjectID = GetValue(1, $Sender->RequestArgs);
 			$ThanksLogModel->RemoveThank($Type, $ObjectID, $SessionUserID);
@@ -49,16 +49,16 @@ class ThankfulPeoplePlugin extends Gdn_Plugin {
 				Redirect($Target);
 			}
 			$ThankfulPeopleDataSet = $ThanksLogModel->GetThankfulPeople($Type, $ObjectID);
-			$Sender->SetData('NewThankedByBox', self::ThankedByBox($ThankfulPeopleDataSet->Result(), False));
+			$Sender->SetData('NewPCByBox', self::ThankedByBox($ThankfulPeopleDataSet->Result(), False));
 			$Sender->Render();
 		}
 	}
 	
-	public function PluginController_ThankFor_Create($Sender) {
+	public function PluginController_PCtag_Create($Sender) {
 		$Session = $this->Session;
 		if (!$Session->IsValid()) return;
 		//$Sender->Permission('Plugins.ThankfulPeople.Thank'); // TODO: PERMISSION THANK FOR CATEGORY
-		$ThanksLogModel = new ThanksLogModel();
+		$ThanksLogModel = new PClogModel();
 		$Type = GetValue(0, $Sender->RequestArgs);
 		$ObjectID = GetValue(1, $Sender->RequestArgs);
 		$Field = $ThanksLogModel->GetPrimaryKeyField($Type);
@@ -80,13 +80,13 @@ class ThankfulPeoplePlugin extends Gdn_Plugin {
 		}
 		
 		$ThankfulPeopleDataSet = $ThanksLogModel->GetThankfulPeople($Type, $ObjectID);
-		$Sender->SetData('NewThankedByBox', self::ThankedByBox($ThankfulPeopleDataSet->Result(), False));
+		$Sender->SetData('NewPCByBox', self::ThankedByBox($ThankfulPeopleDataSet->Result(), False));
 		$Sender->Render();
 	}
 	
 	public function DiscussionController_Render_Before($Sender) {
 		if (!($Sender->DeliveryType() == DELIVERY_TYPE_ALL && $Sender->SyndicationMethod == SYNDICATION_NONE)) return;
-		$ThanksLogModel = new ThanksLogModel();
+		$ThanksLogModel = new PClogModel();
 		$DiscussionID = $Sender->DiscussionID;
 		// TODO: Permission view thanked
 		$CommentIDs = ConsolidateArrayValuesByKey($Sender->CommentData->Result(), 'CommentID');
@@ -106,21 +106,21 @@ class ThankfulPeoplePlugin extends Gdn_Plugin {
 		}
 		
 		$Sender->AddJsFile('jquery.expander.js');
-		$Sender->AddCssFile('plugins/ThankfulPeople/design/thankfulpeople.css');
-		$Sender->AddJsFile('plugins/ThankfulPeople/js/thankfulpeople.functions.js');
+		$Sender->AddCssFile('plugins/PCpeople/design/pcpeople.css');
+		$Sender->AddJsFile('plugins/PCpeople/js/pcpeople.functions.js');
 		
-		$Sender->AddDefinition('ExpandThankList', T('ExpandThankList'));
-		$Sender->AddDefinition('CollapseThankList', T('CollapseThankList'));
+		$Sender->AddDefinition('ExpandPCList', T('ExpandPCList'));
+		$Sender->AddDefinition('CollapsePCList', T('CollapsePCList'));
 	}
 	
 	public static function IsThankable($Type) {
 		static $ThankOnly, $ThankDisabled;
 		$Type = strtolower($Type);
-		if (is_null($ThankOnly)) $ThankOnly = C('Plugins.ThankfulPeople.Only');
+		if (is_null($ThankOnly)) $ThankOnly = C('Plugins.PCpeople.Only');
 		if (is_array($ThankOnly)) {
 			if (!in_array($Type, $ThankOnly)) return False;
 		}
-		if (is_null($ThankDisabled)) $ThankDisabled = C('Plugins.ThankfulPeople.Disabled');
+		if (is_null($ThankDisabled)) $ThankDisabled = C('Plugins.PCpeople.Disabled');
 		if (is_array($ThankDisabled)) {
 			if (in_array($Type, $ThankDisabled)) return False;
 		}
@@ -138,7 +138,7 @@ class ThankfulPeoplePlugin extends Gdn_Plugin {
 		if (!self::IsThankable($Type)) return;
 		
 		static $AllowTakeBack;
-		if (is_null($AllowTakeBack)) $AllowTakeBack = C('Plugins.ThankfulPeople.AllowTakeBack', False);
+		if (is_null($AllowTakeBack)) $AllowTakeBack = C('Plugins.PCpeople.AllowTakeBack', False);
 		$AllowThank = True;
 		
 		switch ($Type) {
@@ -157,18 +157,18 @@ class ThankfulPeoplePlugin extends Gdn_Plugin {
 	
 		if ($AllowThank) {
 			static $LocalizedThankButtonText;
-			if ($LocalizedThankButtonText === Null) $LocalizedThankButtonText = T('ThankCommentOption', T('Thanks'));
-			//$ThankUrl = 'plugin/thankfor/'.strtolower($Type).'/'.$ObjectID.'?Target='.$Sender->SelfUrl;
+			if ($LocalizedThankButtonText === Null) $LocalizedThankButtonText = T('PCcommentOption', T('Mind your wording'));
+			//$ThankUrl = 'plugin/PCtag/'.strtolower($Type).'/'.$ObjectID.'?Target='.$Sender->SelfUrl;
 			//Append the Transientkey at the end of the url to prevent CSRF
-			$ThankUrl = 'plugin/thankfor/'.strtolower($Type).'/'.$ObjectID.'?Target='.$Sender->SelfUrl.'/'.urlencode(Gdn::Session()->TransientKey()).($Target ? '&Target='.urlencode($Target) : '').'?';
-			$Option = '<span class="Thank">'.Anchor($LocalizedThankButtonText, $ThankUrl).'</span>';
+			$ThankUrl = 'plugin/PCtag/'.strtolower($Type).'/'.$ObjectID.'?Target='.$Sender->SelfUrl.'/'.urlencode(Gdn::Session()->TransientKey()).($Target ? '&Target='.urlencode($Target) : '').'?';
+			$Option = '<span class="PCtag">'.Anchor($LocalizedThankButtonText, $ThankUrl).'</span>';
 			$Sender->Options .= $Option;
 		} elseif ($AllowTakeBack) {
 			// Allow unthank
 			static $LocalizedUnThankButtonText;
-			if (is_null($LocalizedUnThankButtonText)) $LocalizedUnThankButtonText = T('UnThankCommentOption', T('Unthank'));
-			$UnThankUrl = 'plugin/unthankfor/'.strtolower($Type).'/'.$ObjectID.'?Target='.$Sender->SelfUrl;
-			$Option = '<span class="UnThank">'.Anchor($LocalizedUnThankButtonText, $UnThankUrl).'</span>';
+			if (is_null($LocalizedUnThankButtonText)) $LocalizedUnThankButtonText = T('UnPCcommentOption', T('Take back wording remark'));
+			$UnThankUrl = 'plugin/unPCtag/'.strtolower($Type).'/'.$ObjectID.'?Target='.$Sender->SelfUrl;
+			$Option = '<span class="UnPCtag">'.Anchor($LocalizedUnThankButtonText, $UnThankUrl).'</span>';
 			$Sender->Options .= $Option;
 		}
 	}
@@ -196,71 +196,71 @@ class ThankfulPeoplePlugin extends Gdn_Plugin {
 		$List = implode(' ', array_map('UserAnchor', $Collection));
 		$ThankCount = count($Collection);
 		//$ThankCountHtml = Wrap($ThankCount);
-		$LocalizedPluralText = Plural($ThankCount, 'Thanked by %1$s', 'Thanked by %1$s');
-		$Html = '<span class="ThankedBy">'.$LocalizedPluralText.'</span>'.$List;
-		if ($Wrap) $Html = Wrap($Html, 'div', array('class' => 'ThankedByBox'));
+		$LocalizedPluralText = Plural($ThankCount, 'Wording criticized by %1$s', 'Wording criticized by %1$s');
+		$Html = '<span class="PCBy">'.$LocalizedPluralText.'</span>'.$List;
+		if ($Wrap) $Html = Wrap($Html, 'div', array('class' => 'PCByBox'));
 		return $Html;
 	}
 	
 	public function UserInfoModule_OnBasicInfo_Handler($Sender) {
-		echo Wrap(T('UserInfoModule.Thanked'), 'dt', array('class' => 'ReceivedThankCount'));
-		echo Wrap($Sender->User->ReceivedThankCount, 'dd', array('class' => 'ReceivedThankCount'));
+		echo Wrap(T('UserInfoModule.PCremarks'), 'dt', array('class' => 'ReceivedPCcount'));
+		echo Wrap($Sender->User->ReceivedPCcount, 'dd', array('class' => 'ReceivedPCcount'));
 	}
 	
 	public function ProfileController_Render_Before($Sender) {
 		if (!($Sender->DeliveryType() == DELIVERY_TYPE_ALL && $Sender->SyndicationMethod == SYNDICATION_NONE)) return;
-		$Sender->AddCssFile('plugins/ThankfulPeople/design/thankfulpeople.css');
+		$Sender->AddCssFile('plugins/PCpeople/design/pcpeople.css');
 	}
 	
 	public function ProfileController_AddProfileTabs_Handler($Sender) {
-		$ReceivedThankCount = GetValue('ReceivedThankCount', $Sender->User);
+		$ReceivedThankCount = GetValue('ReceivedPCcount', $Sender->User);
 		if ($ReceivedThankCount > 0) {
 			$UserReference = ArrayValue(0, $Sender->RequestArgs, '');
 			$Username = ArrayValue(1, $Sender->RequestArgs, '');
-			$Thanked = T('Profile.Tab.Thanked', T('Thanked')).'<span>'.$ReceivedThankCount.'</span>';
-			$Sender->AddProfileTab($Thanked, 'profile/receivedthanks/'.$UserReference.'/'.$Username, 'Thanked');
+			$Thanked = T('Profile.Tab.PCremarks', T('Wording remarks received')).'<span>'.$ReceivedThankCount.'</span>';
+			$Sender->AddProfileTab($Thanked, 'profile/receivedPC/'.$UserReference.'/'.$Username, 'Wording remarks received');
 		}
 	}
 	
-	public function ProfileController_ReceivedThanks_Create($Sender) {
+	public function ProfileController_ReceivedPC_Create($Sender) {
 		$UserReference = ArrayValue(0, $Sender->RequestArgs, '');
 		$Username = ArrayValue(1, $Sender->RequestArgs, '');
 		$Sender->GetUserInfo($UserReference, $Username);
 		$ViewingUserID = $Sender->User->UserID;
 		
 		$ReceivedThankCount = $Sender->User->ReceivedThankCount;
-		$Thanked = T('Profile.Tab.Thanked', T('Thanked')).'<span>'.$ReceivedThankCount.'</span>';
+		$Thanked = T('Profile.Tab.PCremarks', T('Wording remarks received')).'<span>'.$ReceivedPCcount.'</span>';
 		$View = $this->GetView('receivedthanks.php');
 		$Sender->SetTabView($Thanked, $View);
-		$ThanksLogModel = new ThanksLogModel();
+		$ThanksLogModel = new PClogModel();
 		// TODO: PAGINATION
 		list($Sender->ThankData, $Sender->ThankObjects) = $ThanksLogModel->GetReceivedThanks(array('t.UserID' => $ViewingUserID), 0, 50);
 		$Sender->Render();
 	}
 	
 	public function Tick_Every_720_Hours_Handler($Sender) {
-		ThanksLogModel::CleanUp();
-		ThanksLogModel::RecalculateUserReceivedThankCount();
+		PClogModel::CleanUp();
+		PClogModel::RecalculateUserReceivedThankCount();
 	}
 	
 	public function Structure() {
 /*		Gdn::Structure()
 			->Table('Comment')
-			->Column('ThankCount', 'usmallint', 0)
+			->Column('PCcount', 'usmallint', 0)
 			->Set();
 		
 		Gdn::Structure()
 			->Table('Discussion')
-			->Column('ThankCount', 'usmallint', 0)
+			->Column('PCcount', 'usmallint', 0)
 			->Set();*/
 		Gdn::Structure()
 			->Table('User')
-			//->Column('ThankCount', 'usmallint', 0)
-			->Column('ReceivedThankCount', 'usmallint', 0)
+			//->Column('PCcount', 'usmallint', 0)
+			->Column('ReceivedPCcount', 'usmallint', 0)
 			->Set();
 		
 		Gdn::Structure()
-			->Table('ThanksLog')
+			->Table('PClog')
 			->Column('UserID', 'umediumint', False, 'key')
 			->Column('CommentID', 'umediumint', 0)
 			->Column('DiscussionID', 'umediumint', 0)
@@ -271,11 +271,11 @@ class ThankfulPeoplePlugin extends Gdn_Plugin {
 			
 		$RequestArgs = Gdn::Controller()->RequestArgs;
 		if (ArrayHasValue($RequestArgs, 'vanilla')) {
-			ThanksLogModel::RecalculateUserReceivedThankCount();
+			PClogModel::RecalculateUserReceivedThankCount();
 		}
 		
-		//ThanksLogModel::RecalculateCommentThankCount();
-		//ThanksLogModel::RecalculateDiscussionThankCount();
+		//PClogModel::RecalculateCommentThankCount();
+		//PClogModel::RecalculateDiscussionThankCount();
 	}
 		
 	public function Setup() {

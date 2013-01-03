@@ -1,6 +1,6 @@
 <?php if (!defined('APPLICATION')) exit();
 
-class ThanksLogModel extends Gdn_Model {
+class PClogModel extends Gdn_Model {
 	
 	protected static $TableFields = array(
 		'comment' => 'CommentID',
@@ -10,7 +10,7 @@ class ThanksLogModel extends Gdn_Model {
 	protected static $TableNames = array();
 	
 	public function __construct() {
-		parent::__construct('ThanksLog');
+		parent::__construct('PClog');
 		$this->FireEvent('AfterConstruct');
 	}
 	
@@ -45,7 +45,7 @@ class ThanksLogModel extends Gdn_Model {
 		// Final where and return dataset or row count
 		if (is_array($Where)) $this->SQL->Where($Where);
 		$Result = $this->SQL
-			->From('ThanksLog t')
+			->From('PClog t')
 			->Limit($Limit, $Offset)
 			->Get();
 		if ($bCountQuery) $Result = $Result->FirstRow()->RowCount;
@@ -83,7 +83,7 @@ class ThanksLogModel extends Gdn_Model {
 			->Where($Field, $ObjectID)
 			->Where('InsertUserID', $SessionUserID)
 			->Limit(1)
-			->Delete('ThanksLog');
+			->Delete('PClog');
 		self::UpdateUserReceivedThankCount($UserID, '-1');
 	}
 	
@@ -94,9 +94,9 @@ class ThanksLogModel extends Gdn_Model {
 			->History(False, True)
 			->Set($Field, $ObjectID)
 			->Set('UserID', $UserID)
-			->Insert('ThanksLog', array()); // BUG: https://github.com/vanillaforums/Garden/issues/566
+			->Insert('PClog', array()); // BUG: https://github.com/vanillaforums/Garden/issues/566
 		self::UpdateUserReceivedThankCount($UserID);
-		//$Function = 'Recalculate'.$Type.'ThankCount';
+		//$Function = 'Recalculate'.$Type.'PCcount';
 		//call_user_func(array('self', $Function), $ObjectID);
 	}
 	
@@ -104,7 +104,7 @@ class ThanksLogModel extends Gdn_Model {
 		if (!in_array($Value, array('-1', '+1'))) $Value = '+1';
 		Gdn::SQL()
 			->Update('User')
-			->Set('ReceivedThankCount', 'ReceivedThankCount' . $Value, False)
+			->Set('ReceivedPCcount', 'ReceivedPCcount' . $Value, False)
 			->Where('UserID', $UserID)
 			->Put();
 	}
@@ -113,13 +113,13 @@ class ThanksLogModel extends Gdn_Model {
 		$SQL = Gdn::SQL();
 		$SqlCount = $SQL
 			->Select('*', 'count', 'Count')
-			->From('ThanksLog t')
+			->From('PClog t')
 			->Where('t.UserID', 'u.UserID', False, False)
 			->GetSelect();
 		$SQL->Reset();
 		$SQL
 			->Update('User u')
-			->Set('u.ReceivedThankCount', "($SqlCount)", False, False)
+			->Set('u.ReceivedPCcount', "($SqlCount)", False, False)
 			->Put();
 	}
 	
@@ -161,7 +161,7 @@ class ThanksLogModel extends Gdn_Model {
 			if ($Data->CommentID > 0) $ThankData['Comment'][$Data->CommentID][] = $Data;
 			elseif ($Data->DiscussionID > 0) $ThankData['Discussion'][$Data->DiscussionID][] = $Data;
 		}
-		$this->FireEvent('BeforeRetreiveThankObjects');
+		$this->FireEvent('BeforeRetreivePCObjects');
 		if (count($ThankData) == 0) return array(array(), array());
 		foreach (array_keys($ThankData) as $Type) {
 			$ObjectIDs = array_keys($ThankData[$Type]);
@@ -175,7 +175,7 @@ class ThanksLogModel extends Gdn_Model {
 			$this->EventArguments['ObjectPrimaryKey'] =& $ObjectPrimaryKey;
 			$this->EventArguments['ObjectTable'] =& $Table;
 			$this->EventArguments['ExcerptTextField'] =& $ExcerptTextField;
-			$this->FireEvent('RetreiveThankObject');
+			$this->FireEvent('RetreivePCObject');
 			
 			$ObjectIDs = implode(',', array_map('intval', $ObjectIDs)); // TODO: REMOVE
 			
@@ -193,7 +193,7 @@ class ThanksLogModel extends Gdn_Model {
 		}
 		
 		$this->EventArguments['SqlCollection'] =& $SqlCollection;
-		$this->FireEvent('AfterRetreiveThankObjects');
+		$this->FireEvent('AfterRetreivePCObjects');
 		
 		$ResultSql = implode("\n union \n", $SqlCollection);
 		$Objects = $this->SQL->Query("select * from (\n$ResultSql\n) as t order by DateInserted desc")->Result();
@@ -204,10 +204,10 @@ class ThanksLogModel extends Gdn_Model {
 	public static function CleanUp() {
 		$SQL = Gdn::SQL();
 		$Px = $SQL->Database->DatabasePrefix;
-		$SQL->Query("delete t.* from {$Px}ThanksLog t 
+		$SQL->Query("delete t.* from {$Px}PCLog t 
 			left join {$Px}Comment c on c.CommentID = t.CommentID 
 			where c.commentID is null and t.commentID > 0");
-		$SQL->Query("delete t.* from {$Px}ThanksLog t 
+		$SQL->Query("delete t.* from {$Px}PCLog t 
 			left join {$Px}Discussion d on d.DiscussionID = t.DiscussionID 
 			where d.DiscussionID is null and t.DiscussionID > 0");
 	}

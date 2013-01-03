@@ -1,14 +1,14 @@
 $(document).ready(function(){
 	// http://plugins.learningjquery.com/expander/index.html#options
-	$('div.ThankedByBox').expander({
+	$('div.PCByBox').expander({
 		slicePoint: 200, 
-		expandText: gdn.definition('ExpandThankList'), 
+		expandText: gdn.definition('ExpandPCList'), 
 		userCollapse: false,
-		userCollapseText: gdn.definition('CollapseThankList')
+		userCollapseText: gdn.definition('CollapsePCList')
 	});
-	$('div.ThankedByBox span.details > a:last').addClass('Last');
+	$('div.PCByBox span.details > a:last').addClass('Last');
 	
-	$('span.Thank > a, span.UnThank > a').live('click', function(){
+	$('span.PCtag > a, span.UnPCtag > a').live('click', function(){
 		var box, url = this.href, parent = $(this).parent()
 		var item = $(this).parents('ul.MessageList > li'); // TODO: add ul.DataList to collection
 		$(this).after('<span class="TinyProgress">&#160;</span>');
@@ -23,12 +23,12 @@ $(document).ready(function(){
 			},
 			success: function(Data) {
 				parent.fadeOut('fast');
-				box = item.find('div.ThankedByBox').first();
+				box = item.find('div.PCByBox').first();
 				if (box.length == 0) { // Nobody say thanks for this message, create an empty box and insert it after message (AfterCommentBody event)
-					box = $('<div>', {'class':'ThankedByBox'});
+					box = $('<div>', {'class':'PCByBox'});
 					item.find('div.Message').after(box);
 				}
-				box.html(Data.NewThankedByBox);
+				box.html(Data.NewPCByBox);
 				if (typeof $.fn.effect == 'function') box.effect("highlight", {}, "slow");
 			},
 			complete: function(){

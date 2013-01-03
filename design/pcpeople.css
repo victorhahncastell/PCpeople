@@ -1,0 +1,35 @@
+div.PCByBox {
+	font-size:84.6%;
+	line-height: 130%;
+}
+
+div.PCByBox > span.PCBy {
+	margin-right: 5px;	
+}
+
+div.PCByBox > span.PCBy:after {
+	content: ":";
+}
+
+div.PCByBox > a:after, 
+div.PCByBox span.details a:after {
+	content: ", ";
+}
+
+div.PCByBox span.details a.Last:after,
+div.PCByBox > a:last-child:after, 
+div.PCByBox span.details > a:last-child:after {
+	content: ".";
+}
+
+span.re-collapse a:after{
+	content: "" !important;
+}
+
+div.PCByBox > span.PCBy > span:before {
+	content: "(";
+}
+
+div.PCByBox > span.PCBy > span:after {
+	content: ")";
+}
